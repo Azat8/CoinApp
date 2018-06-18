@@ -28,7 +28,7 @@ const routes = [
 		color: 'grey'
 	},
 	{
-		name: 'Bitcoin Prices',
+		name: 'Cryptocurency Exchanges',
 		screen: 'BtcPrices',
 		icon: 'chevron-small-right', 
 		color: 'grey'
@@ -46,6 +46,11 @@ const settings = [
 ];
 
 export default class SideBarContent extends Component {
+	constructor(props) {
+		super(props);
+		console.log(props);
+	}
+	
 	render() {
 		return (
 			<Container>

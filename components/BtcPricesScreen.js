@@ -1,49 +1,49 @@
 import React, { Component } from 'react';
 import SubscribeCurrencies from './../services/SubscribeCurrencies';
 import HeaderComponent from './HeaderComponent';
-import currencyToSymbolMap from 'currency-symbol-map/map';
+
 import {
-  FlatList,
-  View,
-  Image,
-  ActivityIndicator
+	FlatList,
+	View,
+	ActivityIndicator,
+	ScrollView,
+	NetInfo,
+	ToastAndroid
 } from 'react-native';
 
 import {
-  ListItem,
-  Tile
+	ListItem
 } from 'react-native-elements';
 
 import {
-  Left,
-  Body,
-  Right,
-  Thumbnail,
-  Text,
-  Button,
-  Icon,
-  Spinner,
-  Content,
-  Container,
-  Card,
-  CardItem
+	Left, 
+	Body, 
+	Right, 
+	Thumbnail, 
+	Text, 
+	Button, 
+	Icon,
+	Spinner,
+	Content,
+	Container,
+	Card,
+	CardItem
 } from 'native-base';
 
 export class BtcPricesScreen extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       isLoading: true,
       currencies: [],
       limit: 20,
       offset: 0,
       tsyms: 'USD,JPY,EUR',
-      fsym: 'BTC'
+      fsym: 'BTC',
+      title: this.props.navigation.state.params.name
     };
 
     this.service = new SubscribeCurrencies();
-
     this.state.avatars = {
     	USD: require('./../src/icons/currencies/USD.png'),    	
     	EUR: require('./../src/icons/currencies/EUR.png'),    	
@@ -52,26 +52,58 @@ export class BtcPricesScreen extends Component {
   }
 
   componentDidMount() {
-  	this.isMounted = true;
-    this.getData()
-  }
+    NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectionChange);
 
-  componentWillUnmount() {
-  	this.isMounted = false;
-  }
+    NetInfo.isConnected.fetch().done(
+      (isConnected) => { 
+      	this.setState({ status: isConnected }); 
+      	if(isConnected) {
+      		this.getData();
+      	} else {
+      		this.netWorkError();
+      		this.setState({ isLoading: false });
+      	}
+      }
+    );
+	}
+
+	componentWillUnmount() {
+    NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectionChange);
+	}
+
+	handleConnectionChange = (isConnected) => {
+    this.setState({ status: isConnected });
+    if(!isConnected) {
+    	this.netWorkError();
+    } else {
+    	this.getData();
+    	this.setState({
+        isLoading: true
+      });
+    }
+	}
 
   getData() {
-    let options = {
-      path: 'price?fsym=' + this.state.fsym + '&tsyms=' + this.state.tsyms
-    };
+  	console.log('getData', this.state.status);
+    if(this.state.status) {
+	    let options = {
+	      path: 'price?fsym=' + this.state.fsym + '&tsyms=' + this.state.tsyms
+	    };
 
-    this.service.getCoins(options).then((data) => {
-      console.log(data);
-      this.setState({
-        currencies: data,
-        isLoading: false
-      });
-    });
+	    this.service.getCoins(options).then((data) => {
+	      console.log(data);
+	      this.setState({
+	        currencies: data,
+	        isLoading: false
+	      });
+	    });
+    } else {
+    	this.netWorkError();
+    }
+  }
+
+  netWorkError = () => {
+  	ToastAndroid.show('Please check your Internet connection!', ToastAndroid.SHORT);
   }
 
   renderFooter = () => {
@@ -110,7 +142,7 @@ export class BtcPricesScreen extends Component {
           <Card>
             <CardItem header bordered>
             	<Body>
-                <Text>Cryptocurency Exchanges</Text>
+                <Text>{ this.state.title }</Text>
               </Body>
             </CardItem>
             <CardItem>

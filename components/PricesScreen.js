@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import SubscribeCurrencies from './../services/SubscribeCurrencies';
 import HeaderComponent from './HeaderComponent';
+
 import {
 	FlatList,
 	View,
 	ActivityIndicator,
 	ScrollView,
-	NetInfo
+	NetInfo,
+	ToastAndroid
 } from 'react-native';
 
 import {
@@ -31,7 +33,6 @@ import {
 export class PricesScreen extends Component {
 	constructor(props) {
 		super(props);
-
 		this.state = {
 			isLoading: true,
 			currencies: [],
@@ -44,9 +45,41 @@ export class PricesScreen extends Component {
 		this.imageUrl = this.service.imageUrl;
 	}
 
-  componentWillMount() {
-    this.getData();
+  componentDidMount() {
+    NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectionChange);
+
+    NetInfo.isConnected.fetch().done(
+      (isConnected) => { 
+      	this.setState({ status: isConnected }); 
+      	if(isConnected) {
+      		this.getData();
+      	} else {
+      		this.netWorkError();
+      		this.setState({ isLoading: false });
+      	}
+      }
+    );
+	}
+
+	componentWillUnmount() {
+    NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectionChange);
+	}
+
+  netWorkError = () => {
+  	ToastAndroid.show('Please check your Internet connection!', ToastAndroid.SHORT);
   }
+
+	handleConnectionChange = (isConnected) => {
+    this.setState({ status: isConnected });
+    if(!isConnected) {
+    	this.netWorkError();
+    } else {
+    	this.getData();
+    	this.setState({
+        isLoading: true
+      });
+    }
+	}
 
 	onEndReached = ({ distanceFromEnd }) => {
 		if(this.state.hasData) {
@@ -55,23 +88,27 @@ export class PricesScreen extends Component {
 	};
 
 	getData = () => {
-		let options = {
-			path: 'top/totalvol?limit='  + this.state.limit + '&tsym=' + this.state.tsym
-		};
+		if(this.state.status) {
+			let options = {
+				path: 'top/totalvol?limit='  + this.state.limit + '&tsym=' + this.state.tsym
+			};
 
-		this.service.getCoins(options).then((data) => {
-			if(data.Data.length > this.state.currencies.length) {
-				this.setState({
-					currencies: data.Data,
-					isLoading: false
-				});
-			} else {
-				this.setState({
-					hasData: false,
-					isLoading: false
-				});
-			}
-		});
+			this.service.getCoins(options).then((data) => {
+				if(data.Data.length > this.state.currencies.length) {
+					this.setState({
+						currencies: data.Data,
+						isLoading: false
+					});
+				} else {
+					this.setState({
+						hasData: false,
+						isLoading: false
+					});
+				}
+			});
+		} else {
+			this.netWorkError();
+		}
 	}
 
 	renderFooter = () => {
