@@ -1,17 +1,25 @@
 import React, { Component } from 'react';
-import { AsyncStorage } from 'react-native';
 import HeaderComponent from './HeaderComponent';
+import {styles} from './../styles/styles';
+
+import { 
+	Picker,
+	AsyncStorage,
+	Text,
+  View,
+  TouchableOpacity 
+} from 'react-native';
+
 import { 
 	Container,
 	Content, 
 	List, 
-	ListItem, 
-	Text, 
+	ListItem,
 	Icon, 
 	Left, 
 	Body, 
 	Right, 
-	Switch 
+	Switch
 } from 'native-base';
 
 export class SettingsScreen extends Component {
@@ -19,20 +27,22 @@ export class SettingsScreen extends Component {
 		super(props);
 		this.state = {
 			dark: false,
-      large: false
+      theme: 'light'
 		};
+
+		console.log('constructor', styles);
 	}
 
 	componentWillMount() {
-    AsyncStorage.multiGet(['dark', 'large']).then((res) => {
-      console.log(res);
+    AsyncStorage.multiGet(['theme', 'large']).then((res) => {
+    	this.setState({ theme: res.theme != null ? res.theme : 'light' });
     });
   }
 
 	changeTheme = () => {
-		let dark = !this.state.dark;
-    this.setState({dark: dark});
-    AsyncStorage.setItem('dark', JSON.stringify(dark));
+		let theme = this.state.theme == 'light' ? 'dark' : 'light';
+    this.setState({theme: theme});
+    AsyncStorage.setItem('theme', theme);
 	}
 
 	changeTextSize = () => {
@@ -43,10 +53,10 @@ export class SettingsScreen extends Component {
 
   render() {
     return (
-      <Container>
-        <HeaderComponent {...this.props} />
+      <Container style={styles[this.state.theme].container}>
+        <HeaderComponent {...this.props} theme={this.state.theme} />
         <Content>
-          <List>
+          <List  style={styles[this.state.theme].list}>
             <ListItem icon>
               <Left>
                 <Icon name="theme-light-dark" type="MaterialCommunityIcons" />
@@ -55,7 +65,7 @@ export class SettingsScreen extends Component {
                 <Text>Enable Dark Mode</Text>
               </Body>
               <Right>
-                <Switch value={this.state.dark} onValueChange={this.changeTheme} />
+                <Switch value={this.state.theme == 'dark'} onValueChange={this.changeTheme} />
               </Right>
             </ListItem>
             <ListItem icon>

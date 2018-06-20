@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Text, View } from "react-native";
+import { Text, View } from 'react-native';
+import {styles} from './../styles/styles';
 import { 
 	Header,
 	Left,
@@ -12,6 +13,8 @@ import {
 class HeaderComponent extends Component {
 	constructor(props) {
 		super(props);
+		
+		console.log(props.theme);
 		if(typeof this.props.navigation.state.params == 'undefined') {
 			this.props.navigation.state.params = {
 				name: 'About Cryptocurrency',

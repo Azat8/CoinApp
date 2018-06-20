@@ -1,3 +1,5 @@
+import AsyncStorage from 'react-native';
+
 class SubscribeCurrencies {
 	constructor() {
 		this.apiUrl = "https://min-api.cryptocompare.com/data/";

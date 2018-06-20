@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Image } from 'react-native';
+import { Image, AsyncStorage } from 'react-native';
 import { 
 	Container,
 	Content,
@@ -51,6 +51,15 @@ export default class SideBarContent extends Component {
 		console.log(props);
 	}
 	
+	componentWillMount() {
+		AsyncStorage.multiGet(['theme', 'large']).then((res) => {
+			this.setState({ 
+				theme: res.theme != null ? res.theme : 'light',
+				largeText: res.largeText != null ? res.largeText : false
+			});
+		});
+	}
+
 	render() {
 		return (
 			<Container>

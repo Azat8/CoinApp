@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { createDrawerNavigator } from 'react-navigation';
-import { NetInfo } from 'react-native';
 import SideBarContent from './components/SideBarContent';
 
 import { AboutScreen } from './components/AboutScreen';
@@ -31,4 +30,3 @@ export default class App extends Component {
     return (<Routes {...this.state} />);
   }
 }
-
